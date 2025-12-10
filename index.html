@@ -9,28 +9,28 @@
         /* 基本設定 */
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f0f2f5; }
         
-        /* ▼▼▼ 変更点：バーを隠すためのコンテナ ▼▼▼ */
+        /* バーを隠すためのコンテナ */
         .iframe-container {
             width: 100%;
             height: 100%;
-            overflow: hidden; /* はみ出した部分を隠す */
+            overflow: hidden; 
             position: relative;
         }
 
-        /* ▼▼▼ 変更点：窓を上にズラす ▼▼▼ */
+        /* 窓の設定：上にズラして警告バーをカットする */
         iframe { 
             border: none; 
             width: 100%; 
-            /* 高さをバーの分だけ増やす (30px〜40px程度) */
-            height: calc(100% + 35px); 
+            /* 高さをバーの分だけ増やす */
+            height: calc(100% + 40px); 
             display: block; 
             position: absolute;
-            /* 上にズラしてバーを画面外へ追いやる */
-            top: -35px; 
+            /* 上にマイナス指定して画面外へ追いやる */
+            top: -40px; 
             left: 0;
         }
         
-        /* iPhone用 接続ボタン (変更なし) */
+        /* iPhone用 接続ボタン */
         #connect-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.95); z-index: 9999;
@@ -56,7 +56,7 @@
     </div>
 
     <div class="iframe-container">
-        <iframe id="app-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox"></iframe>
+        <iframe id="app-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox allow-top-navigation allow-downloads"></iframe>
     </div>
 
     <script>
@@ -72,6 +72,7 @@
         }
 
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        // Mac Safari判定
         const isMacSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
                    navigator.userAgent && navigator.userAgent.indexOf('CriOS') == -1 &&
                    navigator.userAgent.indexOf('FxiOS') == -1;
