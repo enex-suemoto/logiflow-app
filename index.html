@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Logi Flow System</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* スタイル定義: 画面一杯に広げる */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f0f2f5; }
+        iframe { border: none; width: 100%; height: 100%; display: block; }
+        
+        /* iPhone用 接続ボタンのスタイル (初期は非表示) */
+        #connect-overlay {
+            display: none; /* デフォルトは非表示 */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .btn-connect {
+            padding: 15px 30px; font-size: 18px; color: white; background: #007bff;
+            border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+            transition: transform 0.2s;
+        }
+        .btn-connect:active { transform: scale(0.95); }
+        .message { margin-bottom: 20px; font-family: sans-serif; color: #333; padding: 0 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="connect-overlay">
+        <div class="message">
+            <h3>Logi Flow System</h3>
+            <p>安全な接続を確立するために<br>下のボタンをタップしてください。</p>
+        </div>
+        <button class="btn-connect" onclick="requestAccess()">システムに接続する</button>
+    </div>
+
+    <iframe id="app-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox"></iframe>
+
+    <script>
+        // ▼▼▼ ここにGASのウェブアプリURLを貼り付けてください ▼▼▼
+        const TARGET_GAS_URL = "https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXX/exec"; 
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+        const iframe = document.getElementById('app-frame');
+        const overlay = document.getElementById('connect-overlay');
+
+        // PWA化のおまじない (Service Worker登録)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        // iPhone (iOS) かどうか判定
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        // MacのSafariかどうか判定 (MacでITPが有効な場合も考慮)
+        const isMacSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
+                   navigator.userAgent && navigator.userAgent.indexOf('CriOS') == -1 &&
+                   navigator.userAgent.indexOf('FxiOS') == -1;
+
+        // 初期ロード処理
+        if ((isIOS || isMacSafari) && document.hasStorageAccess) {
+            // iOS/Macの場合: まず権限があるかチェック
+            document.hasStorageAccess().then(hasAccess => {
+                if (hasAccess) {
+                    loadApp(); // 権限があれば即起動
+                } else {
+                    overlay.style.display = 'flex'; // 権限がなければボタンを表示
+                }
+            });
+        } else {
+            // AndroidやPC(Chrome)の場合: 即起動
+            loadApp();
+        }
+
+        // ボタンが押された時の処理 (Storage Access API)
+        function requestAccess() {
+            if (document.requestStorageAccess) {
+                document.requestStorageAccess().then(() => {
+                    overlay.style.display = 'none';
+                    loadApp();
+                }, () => {
+                    alert('接続が拒否されました。設定を確認してください。');
+                });
+            } else {
+                // 古いiOSなどはそのまま通す
+                overlay.style.display = 'none';
+                loadApp();
+            }
+        }
+
+        // アプリを表示する関数
+        function loadApp() {
+            // URLにパラメータを追加してキャッシュを防ぐことも可能
+            iframe.src = TARGET_GAS_URL;
+        }
+    </script>
+</body>
+</html>
